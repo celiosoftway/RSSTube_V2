@@ -56,6 +56,8 @@ async function resolveChannel(url) {
    */
   const html = await fetchChannelPage(normalizedUrl);
 
+  // console.log(html.slice(0, 1000));
+
   // Extrai dados relevantes do HTML
   const channelId = extractChannelId(html);
   const title = extractTitle(html);
@@ -93,17 +95,31 @@ async function fetchChannelPage(url) {
 }
 
 /**
- * Extrai o channelId usando meta tag oficial:
+ * Extrai o channelId do HTML.
  *
- * <meta itemprop="channelId" content="UCxxxx">
- *
- * É o método mais estável atualmente.
+ * Estratégia:
+ * 1) tenta externalId dentro do JSON interno (mais confiável)
+ * 2) fallback meta tag antiga
  */
 function extractChannelId(html) {
-  const match = html.match(
+
+  // MÉTODO PRINCIPAL — JSON interno do YouTube
+  let match = html.match(/"externalId":"(UC[\w-]+)"/);
+
+  if (match) {
+    return match[1];
+  }
+
+  // FALLBACK — meta tag antiga
+  match = html.match(
     /<meta itemprop="channelId" content="(UC[\w-]+)">/
   );
-  return match ? match[1] : null;
+
+  if (match) {
+    return match[1];
+  }
+
+  return null;
 }
 
 /**
