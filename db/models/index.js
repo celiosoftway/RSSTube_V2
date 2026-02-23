@@ -4,6 +4,7 @@ const User = require("./User");
 const Channel = require("./Channel");
 const Subscription = require("./Subscription");
 const Video = require("./Video");
+const UserVideo = require("./UserVideo");
 
 /**
  * Relacionamentos
@@ -21,4 +22,5 @@ module.exports = {
   Channel,
   Subscription,
   Video,
+  UserVideo
 };

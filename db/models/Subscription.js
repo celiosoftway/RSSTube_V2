@@ -3,6 +3,16 @@ const sequelize = require("../sequelize");
 
 const Subscription = sequelize.define("Subscription", {
 
+  UserId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+
+  ChannelId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+
   createdAtTs: {
     type: DataTypes.BIGINT,
     allowNull: false,
@@ -15,6 +25,12 @@ const Subscription = sequelize.define("Subscription", {
 
 }, {
   timestamps: false,
+  indexes: [
+    {
+      unique: true,
+      fields: ["UserId", "ChannelId"],
+    },
+  ],
 });
 
 module.exports = Subscription;
