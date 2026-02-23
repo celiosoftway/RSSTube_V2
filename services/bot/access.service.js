@@ -1,6 +1,6 @@
 const { User } = require('../../db/models');
 
-let BOT_OPEN = false;
+let BOT_OPEN = true;
 
 /**
  * Controle global

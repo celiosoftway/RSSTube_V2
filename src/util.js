@@ -7,10 +7,10 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const OWNER_ID = process.env.OWNER_ID;
 
 const mainKeyboard = Markup.keyboard([
-    ['➕ Adicionar canal'],
-    ['📋 Listar canais', '❌ Deletar canal'],
-    ['🔄 Sincronizar', '❓ Ajuda']
-]).oneTime().resize();
+  ['➕ Adicionar canal', '🔎 Pesquisar canal'],
+  ['📋 Listar canais', '❌ Deletar canal'],
+  ['🔄 Sincronizar', '❓ Ajuda'],
+]).resize();
 
 async function enviarMensagemTelegram(mensagem, chatid) {
     console.log("\n🔁 enviando alerta no Telegran");

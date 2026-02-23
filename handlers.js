@@ -1,11 +1,13 @@
 const {
     addChannel,
     listChannels,
-    removeChannel
+    removeChannel,
 } = require('./services/bot/subscription.service');
 
 const { mainKeyboard } = require('./src/util');
 const { Markup } = require('telegraf');
+const { searchChannels } = require('./services/youtube/search.service');
+
 
 const handleStart = async (ctx) => {
     await ctx.reply('👋 Bem-vindo!\n\n', mainKeyboard);
@@ -97,8 +99,29 @@ Cole a URL do canal para começar.
     await ctx.reply(help, { parse_mode: 'Markdown', ...mainKeyboard });
 }
 
+async function handleSearch(ctx) {
+    await ctx.reply('🔎 Digite o nome do canal que deseja pesquisar:');
+    ctx.session.awaitingSearch = true;
+}
+
+const { sendChannelPreviewCards } = require('./src/channelPreview');
 async function handleChatDefaut(ctx) {
-    await ctx.reply('Não entendi\nUse o Keyboard ou comando\n', mainKeyboard);
+
+    if (ctx.session.awaitingSearch === true) {
+
+        ctx.session.awaitingSearch = false;
+
+        const query = ctx.message.text;
+
+        const results = await searchChannels(query);
+
+        return sendChannelPreviewCards(ctx, results);
+    }
+
+    return ctx.reply(
+        'Não entendi\nUse o Keyboard ou comando\n',
+        mainKeyboard
+    );
 }
 
 module.exports = {
@@ -106,5 +129,5 @@ module.exports = {
     listChannels,
     removeChannel,
     handleStart,
-    handleAdd, handleLista, handleDel, handleSync, handleHelp, handleChatDefaut, handleCancel
+    handleAdd, handleLista, handleDel, handleSync, handleHelp, handleChatDefaut, handleCancel, handleSearch
 };

@@ -11,7 +11,8 @@ const {
     handleSync, 
     handleHelp, 
     handleChatDefaut,
-    handleCancel
+    handleCancel,
+    handleSearch
 } = require("./handlers");
 
 const {
@@ -24,7 +25,7 @@ const {
 const { addCanalScene } = require("./scene/addCanal");
 const { enviarMensagemTelegram } = require('./src/util');
 const { startMonitorLoop } = require('./services/bot/monitor.runner');
-const { handleDeleteCallback } = require('./handlers/callback.handler');
+const { handleDeleteCallback, handleAddCallback } = require('./handlers/callback.handler');
 const { sequelize } = require("./db/models");
 
 
@@ -91,11 +92,14 @@ bot.hears("📋 Listar canais", handleLista);
 bot.hears("❌ Deletar canal", handleDel);
 bot.hears("🔄 Sincronizar", handleSync);
 bot.hears("❓ Ajuda", handleHelp);
+bot.hears("🔎 Pesquisar canal", handleSearch);
+
 
 // Handlers de Ação (Callback)
 bot.action("add", (ctx) => ctx.scene.enter("addCanal"));
 bot.action('cancel', handleCancel);
 bot.action(/^del_(\d+)$/, handleDeleteCallback);
+bot.action(/^add_(UC[\w-]+)$/,handleAddCallback);
 
 // chat generico
 bot.on(['text', 'voice'], handleChatDefaut);

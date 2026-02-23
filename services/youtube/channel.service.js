@@ -63,6 +63,8 @@ async function resolveChannel(url) {
   const title = extractTitle(html);
   const avatar = extractAvatar(html);
 
+  // console.log(`title = ${title}`)
+
   if (!channelId) {
     throw new Error("Channel ID not found");
   }
@@ -81,17 +83,21 @@ async function resolveChannel(url) {
  * Headers são importantes porque o YouTube
  * pode bloquear requests com user-agent vazio.
  */
+
 async function fetchChannelPage(url) {
-  const res = await axios.get(url, {
+
+  const { data } = await axios.get(url, {
+    responseType: 'text',
+    decompress: true, // 👈 MUITO IMPORTANTE
     headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      "Accept-Language": "en-US,en;q=0.9"
-    },
-    timeout: 15000
+      'User-Agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Accept-Encoding': 'gzip, deflate, br'
+    }
   });
 
-  return res.data;
+  return data;
 }
 
 /**
