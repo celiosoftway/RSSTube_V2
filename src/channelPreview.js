@@ -1,7 +1,7 @@
 const { Markup } = require('telegraf');
 
 /**
- * Envia resultados como "cards" (foto + botão)
+ * Envia o primeiro card navegável após a busca
  */
 async function sendChannelPreviewCards(ctx, results = []) {
 
@@ -9,28 +9,64 @@ async function sendChannelPreviewCards(ctx, results = []) {
     return ctx.reply('Nada encontrado.');
   }
 
-  // limita para evitar flood
-  const limited = results.slice(0, 5);
+  // salva resultados na sessão
+  ctx.session.searchResults = results;
+  ctx.session.searchIndex = 0;
 
-  for (const r of limited) {
+  const first = results[0];
 
-    const title = r.title.length > 60
-      ? r.title.slice(0, 57) + '...'
-      : r.title;
+  const keyboard = Markup.inlineKeyboard([
+    [
+      Markup.button.callback('⬅️', 'nav_prev'),
+      Markup.button.callback(`1/${results.length}`, 'noop'),
+      Markup.button.callback('➡️', 'nav_next')
+    ],
+    [
+      Markup.button.callback('➕ Adicionar canal', `add_search_0`)
+    ]
+  ]);
 
-    await ctx.replyWithPhoto(r.avatar, {
-      caption:
-`📺 *${title}*
-🆔 \`${r.channelId}\``,
-      parse_mode: 'Markdown',
-      ...Markup.inlineKeyboard([
-        [Markup.button.callback('➕ Adicionar canal', `add_${r.channelId}`)]
-      ])
-    });
-
-    // pequeno delay pra evitar flood visual
-    await new Promise(res => setTimeout(res, 120));
-  }
+  return ctx.replyWithPhoto(first.avatar, {
+    caption: `📺 *${first.title}*\n🆔 \`${first.channelId}\``,
+    parse_mode: 'Markdown',
+    ...keyboard
+  });
 }
 
-module.exports = { sendChannelPreviewCards };
+/**
+ * Atualiza o card atual (navegação)
+ */
+async function renderSearchCard(ctx) {
+
+  const results = ctx.session.searchResults || [];
+  let index = ctx.session.searchIndex || 0;
+
+  if (!results.length) return;
+
+  const r = results[index];
+
+  const keyboard = Markup.inlineKeyboard([
+    [
+      Markup.button.callback('⬅️', 'nav_prev'),
+      Markup.button.callback(`${index + 1}/${results.length}`, 'noop'),
+      Markup.button.callback('➡️', 'nav_next')
+    ],
+    [
+      Markup.button.callback('➕ Adicionar canal', `add_search_${index}`)
+    ]
+  ]);
+
+  return ctx.editMessageMedia({
+    type: 'photo',
+    media: r.avatar,
+    caption: `📺 *${r.title}*\n🆔 \`${r.channelId}\``,
+    parse_mode: 'Markdown'
+  }, {
+    reply_markup: keyboard.reply_markup
+  });
+}
+
+module.exports = {
+  sendChannelPreviewCards,
+  renderSearchCard
+};

@@ -42,28 +42,18 @@ async function resolveChannel(url) {
    * Caso a URL já tenha o UCID,
    * evitamos request desnecessário.
    */
+  let channelIdFromUrl = null;
+
   const match = normalizedUrl.match(YT_CHANNEL_REGEX);
   if (match) {
-    return {
-      channelId: match[1],
-      canonicalUrl: `https://www.youtube.com/channel/${match[1]}`
-    };
+    channelIdFromUrl = match[1];
   }
 
-  /**
-   * Caso seja @handle, /c/, /user/, etc
-   * precisamos baixar o HTML da página
-   */
   const html = await fetchChannelPage(normalizedUrl);
 
-  // console.log(html.slice(0, 1000));
-
-  // Extrai dados relevantes do HTML
-  const channelId = extractChannelId(html);
+  const channelId = channelIdFromUrl || extractChannelId(html);
   const title = extractTitle(html);
   const avatar = extractAvatar(html);
-
-  // console.log(`title = ${title}`)
 
   if (!channelId) {
     throw new Error("Channel ID not found");

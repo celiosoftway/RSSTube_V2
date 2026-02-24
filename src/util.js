@@ -13,13 +13,13 @@ const mainKeyboard = Markup.keyboard([
 ]).resize();
 
 async function enviarMensagemTelegram(mensagem, chatid) {
-    console.log("\n🔁 enviando alerta no Telegran");
+    console.log("\n🔁 enviando alerta no Telegran",chatid);
 
     const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
     await axios.post(url, {
         chat_id: chatid || OWNER_ID,
         text: mensagem,
-        parse_mode: 'Markdown'
+        parse_mode: 'html'
     });
 }
 

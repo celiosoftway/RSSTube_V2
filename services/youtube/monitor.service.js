@@ -1,12 +1,14 @@
 const { fetchChannelFeed } = require("./feed.service");
 const { insertIfNotExists } = require("./video.service");
 const { throttledLog } = require('../../src/logger')
+const { enviarMensagemTelegram } = require('../../src/util');
 
 const {
     Channel,
     Video,
     Subscription,
     UserVideo,
+    User
 } = require("../../db/models");
 
 /**
@@ -95,7 +97,21 @@ async function processChannel(channel) {
 
             if (!created) continue;
 
-            console.log(`[Monitor] Notificar user ${sub.UserId}: ${video.title}`);
+            const user = await User.findByPk(sub.UserId);
+            if (!user) continue;
+
+            const mensagem =
+                `📺 <b>${channel.title || 'Novo vídeo'}</b>
+🎬 ${video.title}
+
+🔗 ${video.link}`;
+
+            await enviarMensagemTelegram(
+                mensagem,
+                user.telegramId
+            );
+
+            console.log(`[Monitor] Notificado ${sub.UserId}: ${video.title}`);
         }
     }
 }

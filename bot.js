@@ -3,16 +3,16 @@
 const { Telegraf, session, Scenes } = require("telegraf");
 require("dotenv").config();
 
-const { 
-    handleStart,
-    handleAdd, 
-    handleLista, 
-    handleDel, 
-    handleSync, 
-    handleHelp, 
-    handleChatDefaut,
-    handleCancel,
-    handleSearch
+const {
+  handleStart,
+  handleAdd,
+  handleLista,
+  handleDel,
+  handleSync,
+  handleHelp,
+  handleChatDefaut,
+  handleCancel,
+  handleSearch
 } = require("./handlers");
 
 const {
@@ -22,12 +22,18 @@ const {
   handleBlockUser
 } = require('./handlers/admin.handler');
 
+const {
+  handleDeleteCallback,
+  handleAddCallback,
+  handleNextCallback,
+  handlePrevCallback,
+  handleAddSearchCallback
+} = require('./handlers/callback.handler');
+
 const { addCanalScene } = require("./scene/addCanal");
 const { enviarMensagemTelegram } = require('./src/util');
 const { startMonitorLoop } = require('./services/bot/monitor.runner');
-const { handleDeleteCallback, handleAddCallback } = require('./handlers/callback.handler');
 const { sequelize } = require("./db/models");
-
 
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 const OWNER_ID = parseInt(process.env.OWNER_ID);
@@ -99,7 +105,11 @@ bot.hears("🔎 Pesquisar canal", handleSearch);
 bot.action("add", (ctx) => ctx.scene.enter("addCanal"));
 bot.action('cancel', handleCancel);
 bot.action(/^del_(\d+)$/, handleDeleteCallback);
-bot.action(/^add_(UC[\w-]+)$/,handleAddCallback);
+bot.action(/^add_(UC[\w-]+)$/, handleAddCallback);
+bot.action('nav_next', handleNextCallback);
+bot.action('nav_prev', handlePrevCallback);
+bot.action('noop', async (ctx) => ctx.answerCbQuery());
+bot.action(/^add_search_(\d+)$/, handleAddSearchCallback);
 
 // chat generico
 bot.on(['text', 'voice'], handleChatDefaut);
@@ -117,7 +127,7 @@ bot.catch(async (err, ctx) => {
 // Inicialização do bot
 (async () => {
   // quando reinicia, ignora comandos pendentes
-  bot.launch({ dropPendingUpdates: true }); 
+  bot.launch({ dropPendingUpdates: true });
   console.log("✅ Bot iniciado com sucesso!");
   console.log(`🤖 Bot: @${process.env.TELEGRAM_BOT_USERNAME || "seu_bot"}`);
 
