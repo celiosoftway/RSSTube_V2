@@ -23,7 +23,7 @@ const UserVideo = sequelize.define("UserVideo", {
   indexes: [
     {
       unique: true,
-      fields: ["UserId", "VideoId"],
+      fields: ["user_id", "video_id"]
     },
   ],
 });

@@ -28,7 +28,7 @@ const Subscription = sequelize.define("Subscription", {
   indexes: [
     {
       unique: true,
-      fields: ["UserId", "ChannelId"],
+      fields: ["user_id", "channel_id"]
     },
   ],
 });

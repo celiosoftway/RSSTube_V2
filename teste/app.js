@@ -5,7 +5,7 @@ const { sequelize, User, Channel, Video, Subscription, UserVideo } = require("..
 
 (async () => {
 
-    await sequelize.sync();
+    await sequelize.sync(alter=true);
 
 
     /**
