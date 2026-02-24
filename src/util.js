@@ -7,7 +7,7 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const OWNER_ID = process.env.OWNER_ID;
 
 const mainKeyboard = Markup.keyboard([
-  ['➕ Adicionar canal', '🔎 Pesquisar canal'],
+  ['➕ Adicionar por URL', '🔎 Pesquisar e Add'],
   ['📋 Listar canais', '❌ Deletar canal'],
   ['🔄 Sincronizar', '❓ Ajuda'],
 ]).resize();

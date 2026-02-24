@@ -3,6 +3,7 @@
 const { Telegraf, session, Scenes } = require("telegraf");
 require("dotenv").config();
 
+// handlers genericos
 const {
   handleStart,
   handleAdd,
@@ -15,13 +16,16 @@ const {
   handleSearch
 } = require("./handlers");
 
+// handlers de admin
 const {
   handleOpenBot,
   handleCloseBot,
   handleAllowUser,
-  handleBlockUser
+  handleBlockUser,
+  adminMiddleware
 } = require('./handlers/admin.handler');
 
+// handlers de callback
 const {
   handleDeleteCallback,
   handleAddCallback,
@@ -30,76 +34,62 @@ const {
   handleAddSearchCallback
 } = require('./handlers/callback.handler');
 
+// imports de functions
 const { addCanalScene } = require("./scene/addCanal");
 const { enviarMensagemTelegram } = require('./src/util');
 const { startMonitorLoop } = require('./services/bot/monitor.runner');
+
+// importa model do banco de dados
 const { sequelize } = require("./db/models");
 
-const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
-const OWNER_ID = parseInt(process.env.OWNER_ID);
+// dados do bot do .env
+const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN); // token
+const OWNER_ID = parseInt(process.env.OWNER_ID); // id do admin
+const TELEGRAM_BOT_USERNAME = process.env.TELEGRAM_BOT_USERNAME; // nome do bot
 
-// Middlewares
+// set para uso de sessão
 bot.use(session());
+
+// Middlewares para scenes
 const stage = new Scenes.Stage([addCanalScene]);
 bot.use(stage.middleware());
 
 // 🔒 Middleware: restringe acesso ao OWNER_ID
-const { canAccess } = require('./services/bot/access.service');
-
-bot.use(async (ctx, next) => {
-
-  const OWNER_ID = parseInt(process.env.OWNER_ID);
-
-  const userId = ctx.chat?.id;
-  if (!userId) return;
-
-  // 🔒 1️⃣ Bloqueia comandos admin se não for OWNER
-  const command = ctx.message?.text
-    ?.split(' ')[0]
-    ?.split('@')[0];
-
-  const adminCommands = ['/open', '/close', '/allow', '/block'];
-
-  if (adminCommands.includes(command)) {
-    if (userId !== OWNER_ID) {
-      console.log(`🚫 Admin bloqueado: ${userId}`);
-      return;
-    }
-  }
-
-  // 🔒 2️⃣ lógica de acesso beta
-  const allowed = await canAccess(userId, OWNER_ID);
-
-  if (!allowed) {
-    console.log(`⛔ Acesso negado ${userId}`);
-    return;
-  }
-
-  return next();
-});
-
+bot.use(adminMiddleware);
 
 // Comandos do bot
 bot.telegram.setMyCommands([
   { command: "start", description: "Inicia o teclado" },
+  { command: "add_manual", description: "Adicionar by URL" },
+  { command: "add_search", description: "Pesquisar e adicionar" },
+  { command: "lista", description: "Lista canais adicionados" },
+  { command: "deleta", description: "Deleta um canal" },
+  { command: "sync", description: "executa manual" },
+  { command: "ajuda", description: "Ajuda" },
 ]);
 
-// Handlers de Comandos (/)
+// Handlers de Comandos adm (/)
 bot.command("start", handleStart);
-
 bot.command('open', handleOpenBot);
 bot.command('close', handleCloseBot);
 bot.command('allow', handleAllowUser);
 bot.command('block', handleBlockUser);
 
+// Handlers de Comandos usuario (/)
+bot.command('add_manual', handleAdd);
+bot.command('add_search', handleSearch);
+bot.command('lista', handleLista);
+bot.command('deleta', handleDel);
+bot.command('sync', handleSync);
+bot.command('ajuda', handleHelp);
+
 // Handlers de Texto (Hears)
-bot.hears("➕ Adicionar canal", handleAdd);
+bot.hears("➕ Adicionar por URL", handleAdd);
 bot.hears("📋 Listar canais", handleLista);
 bot.hears("❌ Deletar canal", handleDel);
 bot.hears("🔄 Sincronizar", handleSync);
 bot.hears("❓ Ajuda", handleHelp);
-bot.hears("🔎 Pesquisar canal", handleSearch);
-
+bot.hears("🔎 Pesquisar e Add", handleSearch);
 
 // Handlers de Ação (Callback)
 bot.action("add", (ctx) => ctx.scene.enter("addCanal"));
@@ -114,7 +104,7 @@ bot.action(/^add_search_(\d+)$/, handleAddSearchCallback);
 // chat generico
 bot.on(['text', 'voice'], handleChatDefaut);
 
-// tratar erros
+// tratar erros, executa se usar o bot sem um comando especifico
 bot.catch(async (err, ctx) => {
   console.error("❌ Erro global capturado:");
   console.error("Chat ID:", ctx?.chat?.id);
@@ -126,15 +116,15 @@ bot.catch(async (err, ctx) => {
 
 // Inicialização do bot
 (async () => {
-  // quando reinicia, ignora comandos pendentes
-  bot.launch({ dropPendingUpdates: true });
-  console.log("✅ Bot iniciado com sucesso!");
-  console.log(`🤖 Bot: @${process.env.TELEGRAM_BOT_USERNAME || "seu_bot"}`);
+  bot.launch({ dropPendingUpdates: true }); // quando reinicia, ignora comandos pendentes
 
-  await enviarMensagemTelegram(`🤖 @${process.env.TELEGRAM_BOT_USERNAME || "seu_bot"} Iniciado`);
+  console.log("✅ Bot iniciado com sucesso!");
+  console.log(`🤖 Bot: @${TELEGRAM_BOT_USERNAME || "seu_bot"}`);
+
+  await enviarMensagemTelegram(`🤖 @${TELEGRAM_BOT_USERNAME || "seu_bot"} Iniciado`);
 
   await sequelize.sync();
-  startMonitorLoop(180000); // 1 minuto
+  startMonitorLoop(180000);
 })();
 
 process.once("SIGINT", () => bot.stop("SIGINT"));

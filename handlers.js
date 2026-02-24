@@ -89,11 +89,19 @@ async function handleHelp(ctx) {
 📺 *RSSTube Bot*
 
 ➕ Adicionar canal
-📋 Listar canais
-❌ Deletar canal
-🔄 Sincronizar manualmente
+Adiciona um canal pela URL do Youtube. Deve adicionar a URL do canal.
 
-Cole a URL do canal para começar.
+🔎 Pesquisar e Add
+Pesquise pelo nome do canal. Serão exibidos os resultados com opção de adicionar
+
+📋 Listar canais
+Lista os canais adicionados
+
+❌ Deletar canal
+Lista os canais com opç~]ao para exclusão
+
+🔄 Sincronizar manualmente
+Faz o sync manual para buscar novos videos. Por padrão é executado automaticamente a cada 5 minutos.
 `;
 
     await ctx.reply(help, { parse_mode: 'Markdown', ...mainKeyboard });

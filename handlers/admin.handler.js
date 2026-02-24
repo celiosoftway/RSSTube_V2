@@ -1,8 +1,11 @@
+require("dotenv").config();
+
 const {
   openBot,
   closeBot,
   allowUser,
-  blockUser
+  blockUser,
+  canAccess
 } = require('../services/bot/access.service');
 
 async function handleOpenBot(ctx) {
@@ -41,9 +44,43 @@ async function handleBlockUser(ctx) {
   await ctx.reply(`⛔ User ${id} bloqueado.`);
 }
 
+
+async function adminMiddleware(ctx, next) {
+
+  const OWNER_ID = parseInt(process.env.OWNER_ID);
+
+  const userId = ctx.chat?.id;
+  if (!userId) return;
+
+  // 🔒 comandos admin
+  const command = ctx.message?.text
+    ?.split(' ')[0]
+    ?.split('@')[0];
+
+  const adminCommands = ['/open', '/close', '/allow', '/block'];
+
+  if (adminCommands.includes(command)) {
+    if (userId !== OWNER_ID) {
+      console.log(`🚫 Admin bloqueado: ${userId}`);
+      return;
+    }
+  }
+
+  // 🔒 acesso beta
+  const allowed = await canAccess(userId, OWNER_ID);
+
+  if (!allowed) {
+    console.log(`⛔ Acesso negado ${userId}`);
+    return;
+  }
+
+  return next();
+}
+
 module.exports = {
   handleOpenBot,
   handleCloseBot,
   handleAllowUser,
-  handleBlockUser
+  handleBlockUser,
+  adminMiddleware
 };
