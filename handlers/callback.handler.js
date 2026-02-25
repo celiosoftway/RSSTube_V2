@@ -1,4 +1,6 @@
 const { removeChannel, addChannel } = require('../services/bot/subscription.service');
+const { renderChannelViewer } = require('../src/channelViewer');
+const { renderSearchCard } = require('../src/channelPreview');
 
 /**
  * Callback para deletar canal
@@ -36,9 +38,6 @@ async function handleAddCallback(ctx) {
   await ctx.reply('✅ Canal adicionado com sucesso.');
 
 }
-
-
-const { renderSearchCard } = require('../src/channelPreview');
 
 async function handleNextCallback(ctx) {
 
@@ -84,10 +83,37 @@ async function handleAddSearchCallback(ctx) {
   await ctx.reply('✅ Canal adicionado.');
 }
 
+// handler ver canais
+async function handleViewNCallback(ctx) {
+  await ctx.answerCbQuery();
+
+  const list = ctx.session.viewChannels || [];
+  if (!list.length) return;
+
+  ctx.session.viewIndex =
+    (ctx.session.viewIndex + 1) % list.length;
+
+  await renderChannelViewer(ctx);
+}
+
+async function handleViewPCallback(ctx) {
+  await ctx.answerCbQuery();
+
+  const list = ctx.session.viewChannels || [];
+  if (!list.length) return;
+
+  ctx.session.viewIndex =
+    (ctx.session.viewIndex - 1 + list.length) % list.length;
+
+  await renderChannelViewer(ctx);
+}
+
 module.exports = {
   handleDeleteCallback,
   handleAddCallback,
   handleNextCallback,
   handlePrevCallback,
-  handleAddSearchCallback
+  handleAddSearchCallback,
+  handleViewNCallback,
+  handleViewPCallback
 };

@@ -1,13 +1,16 @@
+const { Markup } = require('telegraf');
 const {
     addChannel,
     listChannels,
     removeChannel,
 } = require('./services/bot/subscription.service');
 
-const { mainKeyboard } = require('./src/util');
-const { Markup } = require('telegraf');
 const { searchChannels } = require('./services/youtube/search.service');
+const { runMonitor } = require('./services/youtube/monitor.service');
 
+const { mainKeyboard } = require('./src/util');
+const { sendChannelViewer } = require('./src/channelViewer');
+const { sendChannelPreviewCards } = require('./src/channelPreview');
 
 const handleStart = async (ctx) => {
     await ctx.reply('👋 Bem-vindo!\n\n', mainKeyboard);
@@ -69,7 +72,6 @@ async function handleDel(ctx) {
     );
 }
 
-const { runMonitor } = require('./services/youtube/monitor.service');
 async function handleSync(ctx) {
 
     await ctx.reply('🔄 Sincronizando canais...');
@@ -112,7 +114,6 @@ async function handleSearch(ctx) {
     ctx.session.awaitingSearch = true;
 }
 
-const { sendChannelPreviewCards } = require('./src/channelPreview');
 async function handleChatDefaut(ctx) {
 
     if (ctx.session.awaitingSearch === true) {
@@ -132,10 +133,36 @@ async function handleChatDefaut(ctx) {
     );
 }
 
+// ###########################################################################################################
+/**
+ * card de canais
+ */
+async function handleVerCanais(ctx) {
+  const telegramId = ctx.chat.id.toString();
+  const channels = await listChannels(telegramId);
+
+  const normalized = channels.map(c => {
+
+    const data = c.dataValues || c;
+
+    return {
+      title: data.title,
+      avatar: data.avatar,
+      youtubeChannelId: data.youtubeChannelId,
+      canonicalUrl: `https://www.youtube.com/channel/${data.youtubeChannelId}`
+    };
+  });
+
+  await sendChannelViewer(ctx, normalized);
+}
+
+// ###########################################################################################################
+
 module.exports = {
     addChannel,
     listChannels,
     removeChannel,
     handleStart,
-    handleAdd, handleLista, handleDel, handleSync, handleHelp, handleChatDefaut, handleCancel, handleSearch
+    handleAdd, handleLista, handleDel, handleSync, handleHelp, handleChatDefaut, handleCancel, handleSearch,
+    handleVerCanais
 };

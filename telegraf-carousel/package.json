@@ -1,0 +1,18 @@
+{
+  "name": "telegraf-carousel",
+  "version": "0.1.0",
+  "description": "Generic carousel viewer for Telegraf bots",
+  "main": "src/index.js",
+  "keywords": [
+    "telegraf",
+    "telegram",
+    "bot",
+    "carousel",
+    "telegram-bot"
+  ],
+  "author": "Celio Augusto",
+  "license": "MIT",
+  "peerDependencies": {
+    "telegraf": "^4.0.0"
+  }
+}

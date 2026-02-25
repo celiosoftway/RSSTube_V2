@@ -9,7 +9,8 @@ const OWNER_ID = process.env.OWNER_ID;
 const mainKeyboard = Markup.keyboard([
   ['➕ Adicionar por URL', '🔎 Pesquisar e Add'],
   ['📋 Listar canais', '❌ Deletar canal'],
-  ['🔄 Sincronizar', '❓ Ajuda'],
+  ['🔄 Sincronizar', '👀 Ver canais'],
+  ['❓ Ajuda'],
 ]).resize();
 
 async function enviarMensagemTelegram(mensagem, chatid) {

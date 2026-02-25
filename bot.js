@@ -13,7 +13,8 @@ const {
   handleHelp,
   handleChatDefaut,
   handleCancel,
-  handleSearch
+  handleSearch,
+  handleVerCanais
 } = require("./handlers");
 
 // handlers de admin
@@ -31,7 +32,9 @@ const {
   handleAddCallback,
   handleNextCallback,
   handlePrevCallback,
-  handleAddSearchCallback
+  handleAddSearchCallback,
+  handleViewNCallback,
+  handleViewPCallback
 } = require('./handlers/callback.handler');
 
 // imports de functions
@@ -63,6 +66,7 @@ bot.telegram.setMyCommands([
   { command: "add_manual", description: "Adicionar by URL" },
   { command: "add_search", description: "Pesquisar e adicionar" },
   { command: "lista", description: "Lista canais adicionados" },
+  { command: "ver_canais", description: "Lista os canais em cards com link" },
   { command: "deleta", description: "Deleta um canal" },
   { command: "sync", description: "executa manual" },
   { command: "ajuda", description: "Ajuda" },
@@ -82,6 +86,7 @@ bot.command('lista', handleLista);
 bot.command('deleta', handleDel);
 bot.command('sync', handleSync);
 bot.command('ajuda', handleHelp);
+bot.command('ver_canais', handleVerCanais);
 
 // Handlers de Texto (Hears)
 bot.hears("➕ Adicionar por URL", handleAdd);
@@ -90,6 +95,7 @@ bot.hears("❌ Deletar canal", handleDel);
 bot.hears("🔄 Sincronizar", handleSync);
 bot.hears("❓ Ajuda", handleHelp);
 bot.hears("🔎 Pesquisar e Add", handleSearch);
+bot.hears("👀 Ver canais", handleVerCanais);
 
 // Handlers de Ação (Callback)
 bot.action("add", (ctx) => ctx.scene.enter("addCanal"));
@@ -100,6 +106,8 @@ bot.action('nav_next', handleNextCallback);
 bot.action('nav_prev', handlePrevCallback);
 bot.action('noop', async (ctx) => ctx.answerCbQuery());
 bot.action(/^add_search_(\d+)$/, handleAddSearchCallback);
+bot.action('view_next', handleViewNCallback);
+bot.action('view_prev', handleViewPCallback);
 
 // chat generico
 bot.on(['text', 'voice'], handleChatDefaut);

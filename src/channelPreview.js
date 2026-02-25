@@ -9,7 +9,6 @@ async function sendChannelPreviewCards(ctx, results = []) {
     return ctx.reply('Nada encontrado.');
   }
 
-  // salva resultados na sessão
   ctx.session.searchResults = results;
   ctx.session.searchIndex = 0;
 
@@ -17,9 +16,11 @@ async function sendChannelPreviewCards(ctx, results = []) {
 
   const keyboard = Markup.inlineKeyboard([
     [
-      Markup.button.callback('⬅️', 'nav_prev'),
+      Markup.button.callback('⏺', 'noop'),
       Markup.button.callback(`1/${results.length}`, 'noop'),
-      Markup.button.callback('➡️', 'nav_next')
+      results.length > 1
+        ? Markup.button.callback('➡️', 'nav_next')
+        : Markup.button.callback('⏺', 'noop')
     ],
     [
       Markup.button.callback('➕ Adicionar canal', `add_search_0`)
@@ -45,11 +46,20 @@ async function renderSearchCard(ctx) {
 
   const r = results[index];
 
+  const isFirst = index === 0;
+  const isLast = index === results.length - 1;
+
   const keyboard = Markup.inlineKeyboard([
     [
-      Markup.button.callback('⬅️', 'nav_prev'),
+      isFirst
+        ? Markup.button.callback('⏺', 'noop')
+        : Markup.button.callback('⬅️', 'nav_prev'),
+
       Markup.button.callback(`${index + 1}/${results.length}`, 'noop'),
-      Markup.button.callback('➡️', 'nav_next')
+
+      isLast
+        ? Markup.button.callback('⏺', 'noop')
+        : Markup.button.callback('➡️', 'nav_next')
     ],
     [
       Markup.button.callback('➕ Adicionar canal', `add_search_${index}`)
