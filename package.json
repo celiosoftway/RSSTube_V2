@@ -17,6 +17,6 @@
     "sequelize": "^6.37.7",
     "sqlite3": "^5.1.7",
     "telegraf": "^4.16.3",
-    "telegram-carousel": "file:./telegraf-carousel"
+    "telegraf-carousel": "file:./telegraf-carousel"
   }
 }
