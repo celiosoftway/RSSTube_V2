@@ -1,4 +1,6 @@
 const { Markup } = require('telegraf');
+const { createCarousel } = require('telegraf-carousel');
+
 const {
     addChannel,
     listChannels,
@@ -11,6 +13,7 @@ const { runMonitor } = require('./services/youtube/monitor.service');
 const { mainKeyboard } = require('./src/util');
 const { sendChannelViewer } = require('./src/channelViewer');
 const { sendChannelPreviewCards } = require('./src/channelPreview');
+
 
 const handleStart = async (ctx) => {
     await ctx.reply('👋 Bem-vindo!\n\n', mainKeyboard);
@@ -114,17 +117,86 @@ async function handleSearch(ctx) {
     ctx.session.awaitingSearch = true;
 }
 
-async function handleChatDefaut(ctx) {
+// ###########################################################################################################
+/**
+ * card de canais
+ */
+async function handleVerCanais(ctx) {
+    const telegramId = ctx.chat.id.toString();
+    const channels = await listChannels(telegramId);
 
+    const normalized = channels.map(c => {
+
+        const data = c.dataValues || c;
+
+        return {
+            title: data.title,
+            avatar: data.avatar,
+            youtubeChannelId: data.youtubeChannelId,
+            canonicalUrl: `https://www.youtube.com/channel/${data.youtubeChannelId}`
+        };
+    });
+
+    await sendChannelViewer(ctx, normalized);
+}
+
+// ###########################################################################################################
+
+const { buildChannelViewer } = require('./viewers/channel.viewer');
+const { buildSearchsViewer } = require('./viewers/search.viewer');
+
+let searchsViewer;
+let channelViewer;
+
+function initViewers(bot) {
+    channelViewer = buildChannelViewer(bot);
+    searchsViewer = buildSearchsViewer(bot);
+}
+
+async function handlelistaCaroucel(ctx) {
+
+    const telegramId = ctx.chat.id.toString();
+    const channels = await listChannels(telegramId);
+
+    const normalized = channels.map(c => {
+        const data = c.dataValues || c;
+
+        return {
+            title: data.title,
+            avatar: data.avatar,
+            youtubeChannelId: data.youtubeChannelId,
+            canonicalUrl: `https://www.youtube.com/channel/${data.youtubeChannelId}`
+        };
+    });
+
+    await channelViewer.open(ctx, normalized);
+}
+
+// ###########################################################################################################
+
+async function handleChatDefaut(ctx) {
     if (ctx.session.awaitingSearch === true) {
 
-        ctx.session.awaitingSearch = false;
+        // ctx.session.awaitingSearch = false;
+        // const query = ctx.message.text;
+        // const results = await searchChannels(query);
+        // return sendChannelPreviewCards(ctx, results);
 
+        ctx.session.awaitingSearch = false;
         const query = ctx.message.text;
 
-        const results = await searchChannels(query);
+        const channels = await searchChannels(query);
+        ctx.session.searchResults = channels;
 
-        return sendChannelPreviewCards(ctx, results);
+        const normalized = channels.map((c, i) => ({
+            index: i, 
+            title: c.title,
+            avatar: c.avatar,
+            youtubeChannelId: c.channelId,
+            canonicalUrl: c.url
+        }));
+
+        return await searchsViewer.open(ctx, normalized);
     }
 
     return ctx.reply(
@@ -133,36 +205,12 @@ async function handleChatDefaut(ctx) {
     );
 }
 
-// ###########################################################################################################
-/**
- * card de canais
- */
-async function handleVerCanais(ctx) {
-  const telegramId = ctx.chat.id.toString();
-  const channels = await listChannels(telegramId);
-
-  const normalized = channels.map(c => {
-
-    const data = c.dataValues || c;
-
-    return {
-      title: data.title,
-      avatar: data.avatar,
-      youtubeChannelId: data.youtubeChannelId,
-      canonicalUrl: `https://www.youtube.com/channel/${data.youtubeChannelId}`
-    };
-  });
-
-  await sendChannelViewer(ctx, normalized);
-}
-
-// ###########################################################################################################
-
 module.exports = {
     addChannel,
     listChannels,
     removeChannel,
     handleStart,
     handleAdd, handleLista, handleDel, handleSync, handleHelp, handleChatDefaut, handleCancel, handleSearch,
-    handleVerCanais
+    handleVerCanais,
+    initViewers, handlelistaCaroucel
 };

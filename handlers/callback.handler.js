@@ -66,6 +66,7 @@ async function handlePrevCallback(ctx) {
 };
 
 async function handleAddSearchCallback(ctx) {
+  await ctx.reply('🔁 Adicionando canal.');
   await ctx.answerCbQuery();
 
   const index = parseInt(ctx.match[1]);

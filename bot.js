@@ -1,7 +1,7 @@
 //bot.js
 
-const { Telegraf, session, Scenes } = require("telegraf");
 require("dotenv").config();
+const { Telegraf, Markup, session, Scenes } = require("telegraf");
 
 // handlers genericos
 const {
@@ -14,7 +14,8 @@ const {
   handleChatDefaut,
   handleCancel,
   handleSearch,
-  handleVerCanais
+  handleVerCanais, 
+  initViewers, handlelistaCaroucel
 } = require("./handlers");
 
 // handlers de admin
@@ -53,6 +54,9 @@ const TELEGRAM_BOT_USERNAME = process.env.TELEGRAM_BOT_USERNAME; // nome do bot
 // set para uso de sessão
 bot.use(session());
 
+// registra os viewers
+initViewers(bot);
+
 // Middlewares para scenes
 const stage = new Scenes.Stage([addCanalScene]);
 bot.use(stage.middleware());
@@ -86,7 +90,7 @@ bot.command('lista', handleLista);
 bot.command('deleta', handleDel);
 bot.command('sync', handleSync);
 bot.command('ajuda', handleHelp);
-bot.command('ver_canais', handleVerCanais);
+bot.command('ver_canais', handlelistaCaroucel);
 
 // Handlers de Texto (Hears)
 bot.hears("➕ Adicionar por URL", handleAdd);
@@ -95,19 +99,20 @@ bot.hears("❌ Deletar canal", handleDel);
 bot.hears("🔄 Sincronizar", handleSync);
 bot.hears("❓ Ajuda", handleHelp);
 bot.hears("🔎 Pesquisar e Add", handleSearch);
-bot.hears("👀 Ver canais", handleVerCanais);
+bot.hears("👀 Ver canais", handlelistaCaroucel); // handleVerCanais
 
 // Handlers de Ação (Callback)
 bot.action("add", (ctx) => ctx.scene.enter("addCanal"));
 bot.action('cancel', handleCancel);
 bot.action(/^del_(\d+)$/, handleDeleteCallback);
 bot.action(/^add_(UC[\w-]+)$/, handleAddCallback);
-bot.action('nav_next', handleNextCallback);
-bot.action('nav_prev', handlePrevCallback);
-bot.action('noop', async (ctx) => ctx.answerCbQuery());
+//bot.action('nav_next', handleNextCallback);
+//bot.action('nav_prev', handlePrevCallback);
+//bot.action('noop', async (ctx) => ctx.answerCbQuery());
 bot.action(/^add_search_(\d+)$/, handleAddSearchCallback);
-bot.action('view_next', handleViewNCallback);
-bot.action('view_prev', handleViewPCallback);
+//bot.action(/^add_searchs_(\d+)$/, handleAddSearchCallback);
+//bot.action('view_next', handleViewNCallback);
+//bot.action('view_prev', handleViewPCallback);
 
 // chat generico
 bot.on(['text', 'voice'], handleChatDefaut);
