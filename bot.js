@@ -14,7 +14,6 @@ const {
   handleChatDefaut,
   handleCancel,
   handleSearch,
-  handleVerCanais, 
   initViewers, handlelistaCaroucel
 } = require("./handlers");
 
@@ -31,11 +30,7 @@ const {
 const {
   handleDeleteCallback,
   handleAddCallback,
-  handleNextCallback,
-  handlePrevCallback,
   handleAddSearchCallback,
-  handleViewNCallback,
-  handleViewPCallback
 } = require('./handlers/callback.handler');
 
 // imports de functions
@@ -92,7 +87,7 @@ bot.command('sync', handleSync);
 bot.command('ajuda', handleHelp);
 bot.command('ver_canais', handlelistaCaroucel);
 
-// Handlers de Texto (Hears)
+// Handlers de Texto (Hears do keyboard)
 bot.hears("➕ Adicionar por URL", handleAdd);
 bot.hears("📋 Listar canais", handleLista);
 bot.hears("❌ Deletar canal", handleDel);
@@ -106,13 +101,7 @@ bot.action("add", (ctx) => ctx.scene.enter("addCanal"));
 bot.action('cancel', handleCancel);
 bot.action(/^del_(\d+)$/, handleDeleteCallback);
 bot.action(/^add_(UC[\w-]+)$/, handleAddCallback);
-//bot.action('nav_next', handleNextCallback);
-//bot.action('nav_prev', handlePrevCallback);
-//bot.action('noop', async (ctx) => ctx.answerCbQuery());
 bot.action(/^add_search_(\d+)$/, handleAddSearchCallback);
-//bot.action(/^add_searchs_(\d+)$/, handleAddSearchCallback);
-//bot.action('view_next', handleViewNCallback);
-//bot.action('view_prev', handleViewPCallback);
 
 // chat generico
 bot.on(['text', 'voice'], handleChatDefaut);

@@ -1,5 +1,4 @@
 const { Markup } = require('telegraf');
-const { createCarousel } = require('telegraf-carousel');
 
 const {
     addChannel,
@@ -12,8 +11,6 @@ const { runMonitor } = require('./services/youtube/monitor.service');
 
 const { mainKeyboard } = require('./src/util');
 const { sendChannelViewer } = require('./src/channelViewer');
-const { sendChannelPreviewCards } = require('./src/channelPreview');
-
 
 const handleStart = async (ctx) => {
     await ctx.reply('👋 Bem-vindo!\n\n', mainKeyboard);
