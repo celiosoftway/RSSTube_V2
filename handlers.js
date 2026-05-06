@@ -109,10 +109,6 @@ Faz o sync manual para buscar novos videos. Por padrão é executado automaticam
     await ctx.reply(help, { parse_mode: 'Markdown', ...mainKeyboard });
 }
 
-async function handleSearch(ctx) {
-    await ctx.reply('🔎 Digite o nome do canal que deseja pesquisar:');
-    ctx.session.awaitingSearch = true;
-}
 
 // ###########################################################################################################
 /**
@@ -170,14 +166,82 @@ async function handlelistaCaroucel(ctx) {
 }
 
 // ###########################################################################################################
+async function isAdmin(ctx) {
+
+    const member = await ctx.telegram.getChatMember(
+        ctx.chat.id,
+        ctx.from.id
+    );
+
+    return ['administrator', 'creator'].includes(member.status);
+}
+
+async function handleSearch(ctx) {
+    /*
+    0 = idle
+    1 = aguardando busca no privado
+    2 = aguardando busca no grupo
+    */
+
+    ctx.session.awaitingSearch = 0;
+
+    // privado sempre libera
+    if (ctx.chat.type !== 'private') {
+
+        const admin = await isAdmin(ctx);
+
+        if (!admin) {
+            return ctx.reply('❌ Apenas administradores podem configurar feeds.');
+        }
+
+        ctx.session.awaitingSearch = 2;
+
+    } else {
+        ctx.session.awaitingSearch = 1;
+    }
+
+    await ctx.reply('🔎 Digite o nome do canal que deseja pesquisar:');
+
+}
+
 
 async function handleChatDefaut(ctx) {
-    if (ctx.session.awaitingSearch === true) {
+
+    let awaitingSearch = false;
+
+    // privado
+    if (
+        ctx.chat.type === 'private' &&
+        ctx.session.awaitingSearch === 1
+    ) {
+
+        awaitingSearch = true;
+
+    }
+
+    // grupo
+    if (
+        ctx.chat.type !== 'private' &&
+        ctx.session.awaitingSearch === 2
+    ) {
+
+        const admin = await isAdmin(ctx);
+
+        if (!admin) return;
+
+        awaitingSearch = true;
+
+    }
+
+
+    if ( awaitingSearch  === true) {
 
         // ctx.session.awaitingSearch = false;
         // const query = ctx.message.text;
         // const results = await searchChannels(query);
         // return sendChannelPreviewCards(ctx, results);
+
+        console.log("Sessão ctx.session.awaitingSearch", ctx.session.awaitingSearch)
 
         ctx.session.awaitingSearch = false;
         const query = ctx.message.text;
@@ -186,7 +250,7 @@ async function handleChatDefaut(ctx) {
         ctx.session.searchResults = channels;
 
         const normalized = channels.map((c, i) => ({
-            index: i, 
+            index: i,
             title: c.title,
             avatar: c.avatar,
             youtubeChannelId: c.channelId,
